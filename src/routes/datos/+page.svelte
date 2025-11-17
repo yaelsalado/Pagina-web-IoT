@@ -7,7 +7,6 @@
 
     onMount(() => {
         cargarDatos();
-
         const interval = setInterval(cargarDatos, 2000);
         return () => clearInterval(interval);
     });
@@ -16,11 +15,8 @@
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
-
-            // Asegurar que sea un array
             if (!Array.isArray(data)) return;
 
-            // Mapear todos los registros
             datosEstacion = data.map(row => ({
                 _rowId: row.id,
                 id: row.sensor_id,
@@ -40,34 +36,38 @@
     }
 </script>
 
-<!-- UI REAL -->
-<div class="flex justify-center items-center min-h-[80vh] bg-background px-4">
+<div class="flex justify-center items-center min-h-[80vh] bg-gray-50 dark:bg-gray-900 px-4 py-6">
     <div
-        class="w-full max-w-3xl rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 transition-colors"
+        class="w-full max-w-4xl rounded-3xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700
+               bg-white dark:bg-gray-800 transition-colors"
     >
-        <Table.Root>
-            <Table.Caption class="text-center font-semibold py-3 text-gray-800 dark:text-gray-200">
-                Historial completo de registros
-            </Table.Caption>
+        <!-- Tabla con título -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-700 dark:to-indigo-900 p-4">
+            <h2 class="text-xl font-semibold text-white text-center">Registros de los sensores</h2>
+        </div>
 
+        <Table.Root>
             <Table.Header>
-                <Table.Row class="bg-gray-100 dark:bg-gray-800">
-                    <Table.Head class="text-center">ID Estación</Table.Head>
-                    <Table.Head class="text-center">Humedad</Table.Head>
-                    <Table.Head class="text-center">Altura</Table.Head>
-                    <Table.Head class="text-center">Clima</Table.Head>
-                    <Table.Head class="text-center">Fecha</Table.Head>
+                <Table.Row class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 uppercase text-sm tracking-wider">
+                    <Table.Head class="text-center py-2">ID Estación</Table.Head>
+                    <Table.Head class="text-center py-2">Humedad</Table.Head>
+                    <Table.Head class="text-center py-2">Altura</Table.Head>
+                    <Table.Head class="text-center py-2">Clima</Table.Head>
+                    <Table.Head class="text-center py-2">Fecha</Table.Head>
                 </Table.Row>
             </Table.Header>
 
             <Table.Body>
                 {#each datosEstacion as dato (dato._rowId)}
-                    <Table.Row class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <Table.Cell class="text-center">{dato.id}</Table.Cell>
-                        <Table.Cell class="text-center">{dato.humedad}</Table.Cell>
-                        <Table.Cell class="text-center">{dato.altura}</Table.Cell>
-                        <Table.Cell class="text-center">{dato.clima}</Table.Cell>
-                        <Table.Cell class="text-center">{dato.fecha}</Table.Cell>
+                    <Table.Row
+                        class="even:bg-gray-50 odd:bg-gray-100 dark:even:bg-gray-800 dark:odd:bg-gray-700
+                               hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                    >
+                        <Table.Cell class="text-center py-2">{dato.id}</Table.Cell>
+                        <Table.Cell class="text-center py-2">{dato.humedad}</Table.Cell>
+                        <Table.Cell class="text-center py-2">{dato.altura}</Table.Cell>
+                        <Table.Cell class="text-center py-2">{dato.clima}</Table.Cell>
+                        <Table.Cell class="text-center py-2">{dato.fecha}</Table.Cell>
                     </Table.Row>
                 {/each}
             </Table.Body>
