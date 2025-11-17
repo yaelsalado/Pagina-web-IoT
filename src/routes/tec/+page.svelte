@@ -1,23 +1,23 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-
+	import * as Select from "$lib/components/ui/select/index.js";	
 	let Altura = "Esperando datos...";
 	let Humedad = "Esperando datos...";
 	let alerta = "";
 	let colorAlerta = "";
 
-	const API_URL = "http://localhost:5000/get_data/clase_Esp32";
+	const API_URL = "http://localhost:5000/get_sensor_01";
 
 	function verificarAltura(altura: number) {
-		if (altura >= 0.145) {
-			alerta = "✅ Nivel de agua seguro";
-			colorAlerta = "verde";
-		} else if (altura >= 0.135 && altura < 0.145) {
+		if (altura >= 1.45) {
+			alerta = "🚫 No pase: nivel de agua crítico";
+			colorAlerta = "rojo";
+		} else if (altura >= 1.35) {
 			alerta = "⚠ Precaución: el nivel de agua está subiendo";
 			colorAlerta = "amarillo";
 		} else {
-			alerta = "🚫 No pase: nivel de agua crítico";
-			colorAlerta = "rojo";
+			alerta = "✅ Nivel de agua seguro";
+			colorAlerta = "verde";
 		}
 	}
 
@@ -35,16 +35,20 @@
 		try {
 			const res = await fetch(API_URL);
 			if (!res.ok) throw new Error("Respuesta no válida del servidor");
-			const sensorData = await res.json();
 
-			const distancia = parseFloat(sensorData.Distancia);
-			const lluvia = parseFloat(sensorData.Lluvia);
-			const alturaMetros = distancia / 100;
-			const humedad = 100 - (lluvia / 4095) * 100;
+			const arr = await res.json();
+			const data = arr[0]; // 👈 el backend devuelve un array
+
+			if (!data) return;
+
+			const alturaMetros = parseFloat(data.altura);
+			const humedad = parseFloat(data.humedad);
 
 			verificarAltura(alturaMetros);
+
 			Altura = `Altura: ${alturaMetros.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
+
 		} catch (err) {
 			console.error("Error al obtener datos:", err);
 			alerta = "❌ Error al conectar con el servidor";
@@ -54,10 +58,19 @@
 
 	onMount(() => {
 		obtenerDatos();
-		const intervalo = setInterval(obtenerDatos, 1500);
+		const intervalo = setInterval(obtenerDatos, 2000);
 		return () => clearInterval(intervalo);
 	});
 </script>
+
+<Select.Root type="single">
+  <Select.Trigger class="w-[180px]"></Select.Trigger>
+  <Select.Content>
+    <Select.Item value="light">ESTACIÓN TEC</Select.Item>
+    <Select.Item value="dark">ESTACIÓN CHAPALITA</Select.Item>
+    <Select.Item value="system">ESTACIÓN AMERICANA</Select.Item>
+  </Select.Content>
+</Select.Root>
 
 <div class="page">
 	<h1 class="titulo">Lectura de Sensores</h1>
@@ -79,6 +92,7 @@
 	</div>
 </div>
 
+<!-- ------------------------ CSS ------------------------ -->
 <style>
 	.page {
 		min-height: 80vh;
@@ -91,7 +105,6 @@
 		font-family: 'Inter', sans-serif;
 		padding: 2rem;
 		text-align: center;
-		transition: background 0.3s ease, color 0.3s ease;
 	}
 
 	.titulo {
