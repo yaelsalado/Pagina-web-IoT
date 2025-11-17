@@ -1,12 +1,32 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import * as Select from "$lib/components/ui/select/index.js";	
+	import * as Select from "$lib/components/ui/select/index.js";
+
 	let Altura = "Esperando datos...";
 	let Humedad = "Esperando datos...";
 	let alerta = "";
 	let colorAlerta = "";
 
-	const API_URL = "http://localhost:5000/get_sensor_01";
+	// estación seleccionada desde el menú
+	let selectedStation = "01"; // default
+
+	// 👇 LEER LA ESTACIÓN DESDE LA URL
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		const id = params.get("select");
+		if (id) {
+			selectedStation = id;
+		}
+
+		obtenerDatos();
+		const intervalo = setInterval(obtenerDatos, 1000);
+		return () => clearInterval(intervalo);
+	});
+
+	// función para construir la URL según la estación
+	function buildURL() {
+		return `http://localhost:5000/get_sensor_${selectedStation}`;
+	}
 
 	function verificarAltura(altura: number) {
 		if (altura >= 1.45) {
@@ -22,22 +42,18 @@
 	}
 
 	function interpretarHumedad(humedad: number) {
-		if (humedad >= 80) {
-			return `Lluvia detectada (${humedad.toFixed(1)}%)`;
-		} else if (humedad >= 60) {
-			return `Humedad alta (${humedad.toFixed(1)}%)`;
-		} else {
-			return `Ambiente seco (${humedad.toFixed(1)}%)`;
-		}
+		if (humedad >= 80) return `Lluvia detectada (${humedad.toFixed(1)}%)`;
+		if (humedad >= 60) return `Humedad alta (${humedad.toFixed(1)}%)`;
+		return `Ambiente seco (${humedad.toFixed(1)}%)`;
 	}
 
 	async function obtenerDatos() {
 		try {
-			const res = await fetch(API_URL);
+			const res = await fetch(buildURL());
 			if (!res.ok) throw new Error("Respuesta no válida del servidor");
 
 			const arr = await res.json();
-			const data = arr[0]; // 👈 el backend devuelve un array
+			const data = arr[0];
 
 			if (!data) return;
 
@@ -48,32 +64,37 @@
 
 			Altura = `Altura: ${alturaMetros.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
-
 		} catch (err) {
 			console.error("Error al obtener datos:", err);
 			alerta = "❌ Error al conectar con el servidor";
 			colorAlerta = "rojo";
 		}
 	}
-
-	onMount(() => {
-		obtenerDatos();
-		const intervalo = setInterval(obtenerDatos, 2000);
-		return () => clearInterval(intervalo);
-	});
 </script>
 
-<Select.Root type="single">
-  <Select.Trigger class="w-[180px]"></Select.Trigger>
-  <Select.Content>
-    <Select.Item value="light">ESTACIÓN TEC</Select.Item>
-    <Select.Item value="dark">ESTACIÓN CHAPALITA</Select.Item>
-    <Select.Item value="system">ESTACIÓN AMERICANA</Select.Item>
-  </Select.Content>
-</Select.Root>
 
 <div class="page">
 	<h1 class="titulo">Lectura de Sensores</h1>
+
+	<div class="selector-container">
+		<Select.Root type="single" bind:value={selectedStation} on:change={obtenerDatos}>
+			<Select.Trigger class="w-[180px] font-semibold text-[var(--foreground)] bg-[var(--card)] border border-[var(--muted-foreground)] px-3 py-2 rounded-lg">
+				seleccionar estación
+			</Select.Trigger>
+
+			<Select.Content class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--muted-foreground)] rounded-lg shadow-md">
+				<Select.Item value="01" class="text-[var(--foreground)] px-3 py-2">
+					ESTACIÓN TEC
+				</Select.Item>
+				<Select.Item value="02" class="text-[var(--foreground)] px-3 py-2">
+					ESTACIÓN CHAPALITA
+				</Select.Item>
+				<Select.Item value="03" class="text-[var(--foreground)] px-3 py-2">
+					ESTACIÓN AMERICANA
+				</Select.Item>
+			</Select.Content>
+		</Select.Root>
+	</div>
 
 	<div class="alerta {colorAlerta}">
 		<p>{alerta}</p>
@@ -92,7 +113,6 @@
 	</div>
 </div>
 
-<!-- ------------------------ CSS ------------------------ -->
 <style>
 	.page {
 		min-height: 80vh;
@@ -110,6 +130,12 @@
 	.titulo {
 		font-size: 1.8rem;
 		font-weight: 700;
+		margin-bottom: 1.5rem;
+	}
+
+	.selector-container {
+		display: flex;
+		justify-content: center;
 		margin-bottom: 1.5rem;
 	}
 

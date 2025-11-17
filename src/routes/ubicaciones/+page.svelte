@@ -6,7 +6,7 @@
 	let map: any;
 
 	onMount(async () => {
-		// Configurar la API de Google Maps
+		// Configurar Google Maps
 		setOptions({
 			key: "AIzaSyCrxJJ0pLwyzEcxbnDkK5nuttRcWohUH9U",
 			v: "weekly",
@@ -18,40 +18,42 @@
 		const mapElement = document.getElementById("map") as HTMLElement;
 
 		map = new Map(mapElement, {
-			center: { lat: 20.70, lng: -103.40 }, // centro aproximado entre estaciones
+			center: { lat: 20.70, lng: -103.40 },
 			zoom: 12,
 			mapId: "DEMO_MAP_ID",
 		});
 
-		// Definir marcadores con sus ubicaciones y rutas
+		// Marcadores con ID de estación
 		const markers = [
 			{
+				id: "01",
 				position: { lat: 20.735237741324806, lng: -103.45448702136937 },
 				title: "Estación 1 - Tec GDL",
-				ruta: "/tec"
 			},
 			{
+				id: "02",
 				position: { lat: 20.65641926318562, lng: -103.39922049101062 },
 				title: "Estación 2 - Chapalita",
-				ruta: "/chapalita"
 			},
 			{
+				id: "03",
 				position: { lat: 20.657560861676444, lng: -103.35111620635446 },
 				title: "Estación 3 - Americana",
-				ruta: "/americana"
 			},
 		];
 
-		// Crear los marcadores y añadir evento click
-		markers.forEach(({ position, title, ruta }) => {
+		// Crear marcadores y redirigir según su ID
+		markers.forEach(({ id, position, title }) => {
 			const marker = new Marker({
 				position,
 				map,
 				title,
 			});
 
-			// Redirigir según la estación
-			marker.addListener("click", () => goto(ruta));
+			// Redirige a estaciones pasando el ID
+			marker.addListener("click", () => {
+				goto(`/estaciones?select=${id}`);
+			});
 		});
 	});
 </script>

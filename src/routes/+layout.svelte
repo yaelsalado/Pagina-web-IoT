@@ -9,7 +9,6 @@
 </script>
 
 <svelte:head>
-	<!-- Importa la fuente -->
 	<link
 		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 		rel="stylesheet"
@@ -23,14 +22,12 @@
 	}
 </style>
 
-<!-- Header con nombre del proyecto -->
 <div
 	class="w-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-2 px-6 text-left text-lg font-semibold tracking-wide"
 >
 	TeCuidamos 💧
 </div>
 
-<!-- Barra de navegación -->
 <div class="relative px-6">
 	<NavigationMenu.Root viewport={false}>
 		<NavigationMenu.List>
@@ -61,31 +58,15 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a href="/tec" class={navigationMenuTriggerStyle()}>Estación Tec</a>
+						<a href="/estaciones" class={navigationMenuTriggerStyle()}>Estaciones</a>
 					{/snippet}
 				</NavigationMenu.Link>
 			</NavigationMenu.Item>
 
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href="/chapalita" class={navigationMenuTriggerStyle()}>Estación Chapalita</a>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
 
-			<!-- 🆕 Nueva pestaña -->
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href="/americana" class={navigationMenuTriggerStyle()}>Estación Americana</a>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
 		</NavigationMenu.List>
 	</NavigationMenu.Root>
 
-	<!-- LightSwitch -->
 	<div class="absolute top-3 right-6">
 		<LightSwitch />
 	</div>
