@@ -19,8 +19,9 @@
 		return () => clearInterval(intervalo);
 	});
 
+	// 🔥 IP correctaaquí
 	function buildURL() {
-		return `http://localhost:5000/get_sensor_${selectedStation}`;
+		return `http://10.179.97.220:5000/get_sensor_${selectedStation}`;
 	}
 
 	function verificarAltura(altura: number) {
