@@ -10,8 +10,6 @@
 	import MapPinIcon from "@lucide/svelte/icons/map-pin";
 	import DatabaseIcon from "@lucide/svelte/icons/database";
 	import ServerIcon from "@lucide/svelte/icons/server";
-	import SearchIcon from "@lucide/svelte/icons/search";
-	import SettingsIcon from "@lucide/svelte/icons/settings";
 	import MenuIcon from "@lucide/svelte/icons/menu";
 
 	let { children } = $props();
@@ -53,7 +51,7 @@
 				   bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
 			on:click={toggleSidebar}
 		>
-			<MenuIcon size={20} />
+			<MenuIcon size={22} />
 		</button>
 
 		<!-- Menu items -->
@@ -61,9 +59,10 @@
 			{#each items as item (item.title)}
 				<a
 					href={item.url}
-					class="flex items-center gap-2 p-2 rounded transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+					title={item.title}
+					class="flex items-center gap-3 p-2 rounded transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
 				>
-					<item.icon size={20} />
+					<item.icon size={22} />
 					<span class={`transition-opacity duration-300 ${$isOpen ? "opacity-100" : "opacity-0"}`}>
 						{item.title}
 					</span>
@@ -76,15 +75,24 @@
 	<div class="flex-1 flex flex-col">
 		
 		<!-- Top bar -->
-		<div class="w-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-2 px-6 text-left text-lg font-semibold tracking-wide flex justify-between items-center">
-			<span>TeCuidamos 💧</span>
+		<div class="w-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-3 px-6 text-left text-lg font-semibold tracking-wide flex justify-between items-center">
+			<div class="flex flex-col">
+				<span>TeCuidamos 💧</span>
+			</div>
 			<LightSwitch />
 		</div>
 
 		<!-- Page content -->
 		<main class="flex-1 p-6 overflow-auto">
-			{@render children?.()}
+			<div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+				{@render children?.()}
+			</div>
 		</main>
+
+		<!-- Footer discreto -->
+		<footer class="text-center text-gray-400 dark:text-gray-500 text-sm py-4">
+			© 2025 TeCuidamos
+		</footer>
 	</div>
 
 </div>
