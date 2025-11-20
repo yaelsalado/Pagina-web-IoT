@@ -16,13 +16,19 @@
 	// 🔔 Estado del popup
 	let mostrarPopup = false;
 
-	// Cuando cambia colorAlerta, controlar el popup
-	$: if (colorAlerta === "rojo") {
-		mostrarPopup = true;
-		setTimeout(() => {
-			mostrarPopup = false;
-		}, 3500); // 3.5 segundos
-	}
+	// Controlar popup cuando colorAlerta es rojo
+$: if (colorAlerta === "rojo") {
+    mostrarPopup = true;
+
+    // 📱 Vibración para celulares compatibles
+    if (navigator.vibrate) {
+        navigator.vibrate([200, 120, 200]);
+    }
+
+    setTimeout(() => {
+        mostrarPopup = false;
+    }, 3500);
+}
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -41,7 +47,7 @@
 	function verificarAltura(altura: number) {
 		if (altura >= 1.45) {
 			alerta = "🚫 No pase: nivel de agua crítico";
-			colorAlerta = "rojo";
+			colorAlerta = "rojo"; // → Activará popup
 		} else if (altura >= 1.35) {
 			alerta = "⚠ Precaución: el nivel de agua está subiendo";
 			colorAlerta = "amarillo";
@@ -75,7 +81,7 @@
 		} catch (err) {
 			console.error(err);
 			alerta = "❌ Error al conectar con el servidor";
-			colorAlerta = "rojo";
+			colorAlerta = "rojo"; // popup NO aparece por errores
 		}
 	}
 </script>
@@ -101,12 +107,12 @@
 		</Select.Root>
 	</div>
 
-	<!-- 🔔 POP-UP ANIMADO (solo cuando colorAlerta = rojo) -->
+	<!-- 🔔 POP-UP ABAJO CENTRO (solo nivel crítico) -->
 	{#if mostrarPopup}
 		<div
-			class="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fadeInOut max-w-lg w-[90%]"
+			class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeInOut max-w-lg w-[92%] md:w-[380px]"
 		>
-			<Alert.Root variant="destructive" class="w-full shadow-lg">
+			<Alert.Root variant="destructive" class="w-full shadow-xl rounded-xl">
 				<AlertCircleIcon />
 				<Alert.Title>Tome rutas alternas</Alert.Title>
 				<Alert.Description>
@@ -116,7 +122,7 @@
 		</div>
 	{/if}
 
-	<!-- Alerta ORIGINAL -->
+	<!-- Alerta grande -->
 	<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center transition-colors shadow-md
 		{colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
 		{colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
@@ -150,10 +156,10 @@
 	}
 
 	@keyframes fadeInOut {
-		0% { opacity: 0; transform: translate(-50%, -10px); }
+		0% { opacity: 0; transform: translate(-50%, 10px); }
 		10% { opacity: 1; transform: translate(-50%, 0); }
 		90% { opacity: 1; transform: translate(-50%, 0); }
-		100% { opacity: 0; transform: translate(-50%, -10px); }
+		100% { opacity: 0; transform: translate(-50%, 10px); }
 	}
 
 	.animate-fadeInOut {
