@@ -38,41 +38,6 @@
 			center: { lat: 20.70, lng: -103.40 },
 			zoom: 12,
 			mapId: "DEMO_MAP_ID",
-			styles: [
-				{ elementType: "geometry", stylers: [{ color: "#1e293b" }] },
-				{ elementType: "labels.text.stroke", stylers: [{ color: "#1e293b" }] },
-				{ elementType: "labels.text.fill", stylers: [{ color: "#f8fafc" }] },
-				{
-					featureType: "administrative.locality",
-					elementType: "labels.text.fill",
-					stylers: [{ color: "#f8fafc" }]
-				},
-				{
-					featureType: "poi",
-					elementType: "labels.text.fill",
-					stylers: [{ color: "#f8fafc" }]
-				},
-				{
-					featureType: "road",
-					elementType: "geometry",
-					stylers: [{ color: "#374151" }]
-				},
-				{
-					featureType: "road",
-					elementType: "labels.text.fill",
-					stylers: [{ color: "#f8fafc" }]
-				},
-				{
-					featureType: "water",
-					elementType: "geometry",
-					stylers: [{ color: "#0f172a" }]
-				},
-				{
-					featureType: "water",
-					elementType: "labels.text.fill",
-					stylers: [{ color: "#f8fafc" }]
-				}
-			]
 		});
 
 		markers.forEach(({ id, position, title }) => {
@@ -91,31 +56,67 @@
 
 <style>
 	body {
-		@apply bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 font-sans;
+		@apply bg-gray-100 dark:bg-gray-900 font-sans;
 	}
 </style>
 
-<div class="min-h-screen flex flex-col items-center p-6">
+<div class="min-h-screen flex flex-col items-center p-4 sm:p-6">
+
 	<!-- Encabezado -->
-	<h1 class="text-3xl sm:text-4xl font-bold mb-2 text-center text-gray-900 dark:text-gray-100">
+	<h1 class="text-2xl sm:text-4xl font-bold mb-2 text-center text-gray-900 dark:text-gray-100">
 		Ubicación de nuestras estaciones 📍
 	</h1>
-	<p class="text-gray-600 dark:text-gray-300 mb-6 text-center max-w-xl">
+
+	<p class="text-gray-600 dark:text-gray-300 mb-6 text-center max-w-xl text-sm sm:text-base">
 		Haz click en cualquiera de los marcadores para ver información detallada de cada estación.
 	</p>
 
 	<!-- Mapa -->
-	<div id="map" class="w-full max-w-4xl h-[60vh] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"></div>
+	<div 
+		id="map" 
+		class="
+			w-full 
+			max-w-4xl 
+			h-[50vh] 
+			sm:h-[60vh] 
+			md:h-[65vh]
+			rounded-xl 
+			shadow-lg 
+			border border-gray-200 dark:border-gray-700 
+			overflow-hidden
+		"
+	></div>
 
-	<!-- Tarjetas de estaciones -->
-	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 w-full max-w-5xl">
+	<!-- Tarjetas -->
+	<div class="
+		grid 
+		grid-cols-1 
+		sm:grid-cols-2 
+		lg:grid-cols-3 
+		gap-4 
+		mt-6 
+		w-full 
+		max-w-5xl
+	">
 		{#each markers as { id, title }}
 			<div
-				class="p-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg shadow hover:shadow-lg cursor-pointer transition transform hover:-translate-y-1"
+				class="
+					p-4 
+					bg-white dark:bg-gray-700 
+					text-gray-900 dark:text-gray-100 
+					rounded-lg 
+					shadow 
+					hover:shadow-lg 
+					cursor-pointer 
+					transition 
+					transform hover:-translate-y-1
+				"
 				on:click={() => goto(`/estaciones?select=${id}`)}
 			>
 				<h2 class="font-semibold text-lg">{title}</h2>
-				<p class="text-gray-500 dark:text-gray-300 text-sm mt-1">Haz click para ver más detalles</p>
+				<p class="text-gray-500 dark:text-gray-300 text-sm mt-1">
+					Haz click para ver más detalles
+				</p>
 			</div>
 		{/each}
 	</div>

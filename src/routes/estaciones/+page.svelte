@@ -19,7 +19,6 @@
 		return () => clearInterval(intervalo);
 	});
 
-	// 🔥 IP correctaaquí
 	function buildURL() {
 		return `http://10.179.97.220:5000/get_sensor_${selectedStation}`;
 	}
@@ -67,16 +66,19 @@
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-start gap-6 py-6 px-4 bg-gray-50 dark:bg-gray-900 transition-colors">
-	<h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Lectura de Sensores</h1>
+
+	<h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+		Lectura de Sensores
+	</h1>
 
 	<!-- Selector -->
-	<div class="mb-4">
+	<div class="w-full max-w-xs">
 		<Select.Root type="single" bind:value={selectedStation} on:change={obtenerDatos}>
-			<Select.Trigger class="w-[200px] font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+			<Select.Trigger class="w-full font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-shadow">
 				Seleccionar estación
 			</Select.Trigger>
 
-			<Select.Content class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg shadow-md">
+			<Select.Content class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg shadow-md w-full">
 				<Select.Item value="01" class="px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">TEC</Select.Item>
 				<Select.Item value="02" class="px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">CHAPALITA</Select.Item>
 				<Select.Item value="03" class="px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">AMERICANA</Select.Item>
@@ -93,20 +95,22 @@
 	</div>
 
 	<!-- Cards -->
-	<div class="flex flex-wrap justify-center gap-6">
-		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md w-60 flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
+	<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-xl">
+
+		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
 			<h2 class="text-lg font-medium mb-2">Altura del agua</h2>
-			<p class="text-2xl font-bold">{Altura}</p>
+			<p class="text-3xl font-bold">{Altura}</p>
 		</div>
 
-		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md w-60 flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
+		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
 			<h2 class="text-lg font-medium mb-2">Condiciones</h2>
-			<p class="text-2xl font-bold">{Humedad}</p>
+			<p class="text-2xl font-bold break-words text-center">{Humedad}</p>
 		</div>
+
 	</div>
 </div>
 
-<p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+<p class="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
 	Estación seleccionada: {selectedStation === "01" ? "TEC" : selectedStation === "02" ? "CHAPALITA" : "AMERICANA"}
 </p>
 
