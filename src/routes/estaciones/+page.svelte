@@ -2,12 +2,27 @@
 	import { onMount } from "svelte";
 	import * as Select from "$lib/components/ui/select/index.js";
 
+	// 🔔 Nuevos imports para la alerta pop-up
+	import * as Alert from "$lib/components/ui/alert/index.js";
+	import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
+
 	let Altura = "Esperando datos...";
 	let Humedad = "Esperando datos...";
 	let alerta = "";
 	let colorAlerta = "";
 
 	let selectedStation = "01";
+
+	// 🔔 Estado del popup
+	let mostrarPopup = false;
+
+	// Cuando cambia colorAlerta, controlar el popup
+	$: if (colorAlerta === "rojo") {
+		mostrarPopup = true;
+		setTimeout(() => {
+			mostrarPopup = false;
+		}, 3500); // 3.5 segundos
+	}
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -86,7 +101,22 @@
 		</Select.Root>
 	</div>
 
-	<!-- Alerta -->
+	<!-- 🔔 POP-UP ANIMADO (solo cuando colorAlerta = rojo) -->
+	{#if mostrarPopup}
+		<div
+			class="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-fadeInOut max-w-lg w-[90%]"
+		>
+			<Alert.Root variant="destructive" class="w-full shadow-lg">
+				<AlertCircleIcon />
+				<Alert.Title>Tome rutas alternas</Alert.Title>
+				<Alert.Description>
+					El nivel de agua es crítico y podría haber riesgo de inundación.
+				</Alert.Description>
+			</Alert.Root>
+		</div>
+	{/if}
+
+	<!-- Alerta ORIGINAL -->
 	<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center transition-colors shadow-md
 		{colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
 		{colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
@@ -117,5 +147,16 @@
 <style>
 	h1, h2, p {
 		transition: color 0.2s ease;
+	}
+
+	@keyframes fadeInOut {
+		0% { opacity: 0; transform: translate(-50%, -10px); }
+		10% { opacity: 1; transform: translate(-50%, 0); }
+		90% { opacity: 1; transform: translate(-50%, 0); }
+		100% { opacity: 0; transform: translate(-50%, -10px); }
+	}
+
+	.animate-fadeInOut {
+		animation: fadeInOut 3.5s ease forwards;
 	}
 </style>
