@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import * as Select from "$lib/components/ui/select/index.js";
-	// imports para la alerta pop-up
 	import * as Alert from "$lib/components/ui/alert/index.js";
 	import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
 
@@ -12,14 +11,14 @@
 
 	let selectedStation = "01";
 
-	//Estado del popup
+	// Estado del popup
 	let mostrarPopup = false;
 
 	// Controlar popup cuando colorAlerta es rojo
 	$: if (colorAlerta === "rojo") {
 	    mostrarPopup = true;
 
-	    //Vibración para celulares compatibles
+	    // Vibración para celulares compatibles
 	    if (navigator.vibrate) {
 	        navigator.vibrate([200, 120, 200]);
 	    }
@@ -74,16 +73,15 @@
 			/* --------------------------------------------
 			   🔵 CÁLCULO NUEVO: Altura real del agua
 			   -------------------------------------------- */
+			const ALTURA_POSTE = 0.17; // altura fija del poste en metros
 
-			const ALTURA_POSTE = 0.16; // altura fija del poste en metros
+			// Lectura cruda del sensor (cm → m)
+			const lecturaSensorMetros = parseFloat(data.altura) / 100;
 
-			// Lectura cruda del sensor
-			const lecturaSensorMetros = parseFloat(data.altura) / 100; // cm → m
-
-			// Altura real del agua
+			// Altura real del agua = poste - sensor
 			let alturaAgua = ALTURA_POSTE - lecturaSensorMetros;
 
-			// Protección por ruido (no permitir negativos)
+			// Protección contra valores negativos
 			alturaAgua = Math.max(0, alturaAgua);
 
 			// Interpretación de humedad
@@ -93,7 +91,7 @@
 			// Aplicar verificación con la altura nueva
 			verificarAltura(alturaAgua);
 
-			// Mostrar valores
+			// Mostrar valores en tarjetas
 			Altura = `${alturaAgua.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
 
