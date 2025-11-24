@@ -71,16 +71,30 @@
 			const data = arr[0];
 			if (!data) return;
 
-			//Altura: convertida a metros
-			const alturaCm = parseFloat(data.altura);
-			const alturaMetros = alturaCm / 100;
+			/* --------------------------------------------
+			   🔵 CÁLCULO NUEVO: Altura real del agua
+			   -------------------------------------------- */
 
-			//Humedad interpretada: 0 → 100%, 4095 → 0%
+			const ALTURA_POSTE = 0.16; // altura fija del poste en metros
+
+			// Lectura cruda del sensor
+			const lecturaSensorMetros = parseFloat(data.altura) / 100; // cm → m
+
+			// Altura real del agua
+			let alturaAgua = ALTURA_POSTE - lecturaSensorMetros;
+
+			// Protección por ruido (no permitir negativos)
+			alturaAgua = Math.max(0, alturaAgua);
+
+			// Interpretación de humedad
 			const sensorHumedad = parseFloat(data.humedad);
 			const humedad = (1 - sensorHumedad / 4095) * 100;
 
-			verificarAltura(alturaMetros); 
-			Altura = `${alturaMetros.toFixed(2)} m`;
+			// Aplicar verificación con la altura nueva
+			verificarAltura(alturaAgua);
+
+			// Mostrar valores
+			Altura = `${alturaAgua.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
 
 		} catch (err) {
@@ -129,13 +143,13 @@
 	{/if}
 
 	<!-- Alerta grande -->
-<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center shadow-md
-    {colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
-    {colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
-    {colorAlerta === 'rojo' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 border border-red-400' : ''}
-    {colorAlerta === 'azul' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 border border-blue-400' : ''}">
-    <p class="text-lg">{alerta}</p>
-</div>
+	<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center shadow-md
+	    {colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
+	    {colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
+	    {colorAlerta === 'rojo' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 border border-red-400' : ''}
+	    {colorAlerta === 'azul' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 border border-blue-400' : ''}">
+	    <p class="text-lg">{alerta}</p>
+	</div>
 
 
 	<!-- Cards -->
