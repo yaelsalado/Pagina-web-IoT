@@ -21,6 +21,9 @@
 			position: { lat: 20.657560861676444, lng: -103.35111620635446 },
 			title: "Estación 3 - Americana",
 		},
+	
+
+		
 	];
 
 	onMount(async () => {
@@ -32,6 +35,7 @@
 		const { Map } = await importLibrary("maps");
 		const { Marker } = await importLibrary("marker");
 
+		
 		const mapElement = document.getElementById("map") as HTMLElement;
 
 		map = new Map(mapElement, {

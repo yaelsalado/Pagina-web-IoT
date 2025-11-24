@@ -5,6 +5,7 @@
   let datosEstacion: any[] = [];
   let errorMsg = "";
 
+  // URL de la API para obtener datos
   const API_URL = "http://localhost:5000/get_all";
   let controller: AbortController;
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import * as Select from "$lib/components/ui/select/index.js";
-
-	// 🔔 Nuevos imports para la alerta pop-up
+	// imports para la alerta pop-up
 	import * as Alert from "$lib/components/ui/alert/index.js";
 	import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
 
@@ -13,14 +12,14 @@
 
 	let selectedStation = "01";
 
-	// 🔔 Estado del popup
+	//Estado del popup
 	let mostrarPopup = false;
 
 	// Controlar popup cuando colorAlerta es rojo
 	$: if (colorAlerta === "rojo") {
 	    mostrarPopup = true;
 
-	    // 📱 Vibración para celulares compatibles
+	    //Vibración para celulares compatibles
 	    if (navigator.vibrate) {
 	        navigator.vibrate([200, 120, 200]);
 	    }
@@ -41,14 +40,14 @@
 	});
 
 	function buildURL() {
-		return `http://10.179.97.220:5000/get_sensor_${selectedStation}`;
+		return `http://192.168.42.220:5000/get_sensor_${selectedStation}`;
 	}
 
 	function verificarAltura(altura: number) {
-		if (altura >= 1.45) {
+		if (altura <= 0.10) {
 			alerta = "🚫 No pase: nivel de agua crítico";
 			colorAlerta = "rojo"; // → Activará popup
-		} else if (altura >= 1.35) {
+		} else if (altura <= 0.15) {
 			alerta = "⚠ Precaución: el nivel de agua está subiendo";
 			colorAlerta = "amarillo";
 		} else {
@@ -72,17 +71,18 @@
 			const data = arr[0];
 			if (!data) return;
 
-			// 🔹 Altura: sensor envía cm → convertir a metros
+			//Altura: convertida a metros
 			const alturaCm = parseFloat(data.altura);
 			const alturaMetros = alturaCm / 100;
 
-			// 🔹 Humedad inversa: 0 → 100%, 4095 → 0%
+			//Humedad interpretada: 0 → 100%, 4095 → 0%
 			const sensorHumedad = parseFloat(data.humedad);
 			const humedad = (1 - sensorHumedad / 4095) * 100;
 
-			verificarAltura(alturaMetros);
+			verificarAltura(alturaMetros); 
 			Altura = `${alturaMetros.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
+
 		} catch (err) {
 			console.error(err);
 			alerta = "Error al conectar con el servidor  =(";
@@ -90,6 +90,7 @@
 		}
 	}
 </script>
+
 
 <div class="min-h-[80vh] flex flex-col items-center justify-start gap-6 py-6 px-4 bg-gray-50 dark:bg-gray-900 transition-colors">
 
@@ -112,7 +113,7 @@
 		</Select.Root>
 	</div>
 
-	<!-- 🔔 POP-UP ABAJO CENTRO (solo nivel crítico) -->
+	<!--POP-UP (solo nivel crítico) -->
 	{#if mostrarPopup}
 		<div
 			class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-lg w-[92%] md:w-[380px]"
@@ -157,8 +158,9 @@
 	Estación seleccionada: {selectedStation === "01" ? "TEC" : selectedStation === "02" ? "CHAPALITA" : "AMERICANA"}
 </p>
 
+
 <style>
-	h1, h2, p {
+	h1, h2, p { 
 		transition: color 0.2s ease;
 	}
 </style>
