@@ -43,10 +43,10 @@
 	}
 
 	function verificarAltura(altura: number) {
-		if (altura <= 0.10) {
+		if (altura >= 0.05) {
 			alerta = "🚫 No pase: nivel de agua crítico";
 			colorAlerta = "rojo"; // → Activará popup
-		} else if (altura <= 0.15) {
+		} else if (altura >= 0.02) {
 			alerta = "⚠ Precaución: el nivel de agua está subiendo";
 			colorAlerta = "amarillo";
 		} else {
