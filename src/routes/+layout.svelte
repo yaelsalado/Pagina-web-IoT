@@ -46,7 +46,7 @@
 		class:w-64={$isOpen}
 		class:w-16={!$isOpen}
 	>
-		<!-- Trigger escritorio -->
+		<!-- abrir/cerrar sidebar -->
 		<button
 			class="p-2 m-2 rounded cursor-pointer flex items-center justify-center
 				   bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"

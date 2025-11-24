@@ -17,18 +17,18 @@
 	let mostrarPopup = false;
 
 	// Controlar popup cuando colorAlerta es rojo
-$: if (colorAlerta === "rojo") {
-    mostrarPopup = true;
+	$: if (colorAlerta === "rojo") {
+	    mostrarPopup = true;
 
-    // 📱 Vibración para celulares compatibles
-    if (navigator.vibrate) {
-        navigator.vibrate([200, 120, 200]);
-    }
+	    // 📱 Vibración para celulares compatibles
+	    if (navigator.vibrate) {
+	        navigator.vibrate([200, 120, 200]);
+	    }
 
-    setTimeout(() => {
-        mostrarPopup = false;
-    }, 3500);
-}
+	    setTimeout(() => {
+	        mostrarPopup = false;
+	    }, 3500);
+	}
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -72,16 +72,21 @@ $: if (colorAlerta === "rojo") {
 			const data = arr[0];
 			if (!data) return;
 
-			const alturaMetros = parseFloat(data.altura);
-			const humedad = parseFloat(data.humedad);
+			// 🔹 Altura: sensor envía cm → convertir a metros
+			const alturaCm = parseFloat(data.altura);
+			const alturaMetros = alturaCm / 100;
+
+			// 🔹 Humedad inversa: 0 → 100%, 4095 → 0%
+			const sensorHumedad = parseFloat(data.humedad);
+			const humedad = (1 - sensorHumedad / 4095) * 100;
 
 			verificarAltura(alturaMetros);
 			Altura = `${alturaMetros.toFixed(2)} m`;
 			Humedad = interpretarHumedad(humedad);
 		} catch (err) {
 			console.error(err);
-			alerta = "❌ Error al conectar con el servidor";
-			colorAlerta = "rojo"; // popup NO aparece por errores
+			alerta = "Error al conectar con el servidor  =(";
+			colorAlerta = "azul"; // popup NO aparece por errores
 		}
 	}
 </script>
@@ -110,7 +115,7 @@ $: if (colorAlerta === "rojo") {
 	<!-- 🔔 POP-UP ABAJO CENTRO (solo nivel crítico) -->
 	{#if mostrarPopup}
 		<div
-			class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fadeInOut max-w-lg w-[92%] md:w-[380px]"
+			class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-lg w-[92%] md:w-[380px]"
 		>
 			<Alert.Root variant="destructive" class="w-full shadow-xl rounded-xl">
 				<AlertCircleIcon />
@@ -123,22 +128,24 @@ $: if (colorAlerta === "rojo") {
 	{/if}
 
 	<!-- Alerta grande -->
-	<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center transition-colors shadow-md
-		{colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
-		{colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
-		{colorAlerta === 'rojo' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 border border-red-400' : ''}">
-		<p class="text-lg">{alerta}</p>
-	</div>
+<div class="max-w-md w-full py-3 px-6 rounded-xl font-semibold text-center shadow-md
+    {colorAlerta === 'verde' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 border border-green-400' : ''}
+    {colorAlerta === 'amarillo' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 border border-yellow-400' : ''}
+    {colorAlerta === 'rojo' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 border border-red-400' : ''}
+    {colorAlerta === 'azul' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 border border-blue-400' : ''}">
+    <p class="text-lg">{alerta}</p>
+</div>
+
 
 	<!-- Cards -->
 	<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-xl">
 
-		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
+		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center">
 			<h2 class="text-lg font-medium mb-2">Altura del agua</h2>
 			<p class="text-3xl font-bold">{Altura}</p>
 		</div>
 
-		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center transition-transform hover:-translate-y-1 hover:shadow-lg">
+		<div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-xl shadow-md flex flex-col items-center">
 			<h2 class="text-lg font-medium mb-2">Condiciones</h2>
 			<p class="text-2xl font-bold break-words text-center">{Humedad}</p>
 		</div>
@@ -153,16 +160,5 @@ $: if (colorAlerta === "rojo") {
 <style>
 	h1, h2, p {
 		transition: color 0.2s ease;
-	}
-
-	@keyframes fadeInOut {
-		0% { opacity: 0; transform: translate(-50%, 10px); }
-		10% { opacity: 1; transform: translate(-50%, 0); }
-		90% { opacity: 1; transform: translate(-50%, 0); }
-		100% { opacity: 0; transform: translate(-50%, 10px); }
-	}
-
-	.animate-fadeInOut {
-		animation: fadeInOut 3.5s ease forwards;
 	}
 </style>
