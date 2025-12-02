@@ -48,6 +48,7 @@
 	},
 	"dependencies": {
 		"@googlemaps/js-api-loader": "^2.0.2",
+		"d3-scale": "^4.0.2",
 		"mode-watcher": "^1.1.0"
 	}
 }

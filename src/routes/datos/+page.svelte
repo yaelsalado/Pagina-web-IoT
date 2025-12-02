@@ -1,5 +1,8 @@
 <script lang="ts">
     import * as Table from "$lib/components/ui/table/index.js";
+    import * as Chart from "$lib/components/ui/chart/index.js";
+    import { scaleBand } from "d3-scale";
+    import { BarChart } from "layerchart";
     import { onMount } from "svelte";
 
     /* ------------------------------ */
@@ -13,10 +16,36 @@
 
     // Predicción para mañana
     let prediccion = "";
-    let probabilidades: number[] = [];
+    let probabilidades: number[] = [0, 0, 0, 0];
 
-    // Pronóstico 24 horas
-    let forecast24 = [];
+    /* ------------------------------ */
+    /*       CONFIG GRÁFICO           */
+    /* ------------------------------ */
+    let chartData = [
+        { label: "Soleado", prob: 0 },
+        { label: "Nublado", prob: 0 },
+        { label: "Lluvioso", prob: 0 },
+        { label: "Tormenta", prob: 0 }
+    ];
+
+    const chartConfig = {
+        prob: {
+            label: "Probabilidad (%)",
+            color: "#2563eb"
+        }
+    } satisfies Chart.ChartConfig;
+
+    /* ------------------------------ */
+    /*   ACTUALIZAR CHART CON DATOS   */
+    /* ------------------------------ */
+    function actualizarChart() {
+        chartData = [
+            { label: "Soleado", prob: probabilidades[0] * 100 },
+            { label: "Nublado", prob: probabilidades[1] * 100 },
+            { label: "Lluvioso", prob: probabilidades[2] * 100 },
+            { label: "Tormenta", prob: probabilidades[3] * 100 }
+        ];
+    }
 
     /* ------------------------------ */
     /*   CLIMA OPEN-METEO             */
@@ -66,10 +95,8 @@
             const data = await res.json();
             if (!Array.isArray(data)) return;
 
-            // Obtener clima una sola vez
             const climaActual = await obtenerClimaOpenMeteo();
 
-            // Mapear datos y ordenar
             const nuevos = data
                 .map((row: any) => ({
                     _rowId: row.id,
@@ -106,11 +133,12 @@
             const etiquetas = ["Soleado", "Nublado", "Lluvioso", "Tormenta"];
             prediccion = etiquetas[data.clase_predicha];
             probabilidades = data.probabilidades;
+
+            actualizarChart();
         } catch (err) {
             console.error("❌ Error predicción clima:", err);
         }
     }
-
 
     /* ------------------------------ */
     /*   ON MOUNT                     */
@@ -143,7 +171,6 @@
             <div class="text-red-500 text-center py-2">{errorMsg}</div>
         {/if}
 
-        <!-- TABLA -->
         <div class="overflow-x-auto">
             <Table.Root class="min-w-full">
                 <Table.Header>
@@ -191,24 +218,61 @@
                         <div>
                             <p class="text-2xl font-semibold">{prediccion}</p>
                             <p class="text-gray-600 dark:text-gray-300">
-                                Probabilidad más alta: {(Math.max(...probabilidades) * 100).toFixed(1)}%
+                                Probabilidad más alta:
+                                {(Math.max(...probabilidades) * 100).toFixed(1)}%
                             </p>
                         </div>
                     </div>
 
-                    <h3 class="mt-4 font-medium">Distribución:</h3>
+                    <h3 class="mt-6 font-medium">Distribución:</h3>
                     <ul class="mt-2 space-y-1">
                         <li>☀️ Soleado: {(probabilidades[0] * 100).toFixed(1)}%</li>
                         <li>☁️ Nublado: {(probabilidades[1] * 100).toFixed(1)}%</li>
                         <li>🌧️ Lluvioso: {(probabilidades[2] * 100).toFixed(1)}%</li>
                         <li>⛈️ Tormenta: {(probabilidades[3] * 100).toFixed(1)}%</li>
                     </ul>
+
                 {:else}
                     <p class="mt-3 text-gray-500">Calculando predicción...</p>
                 {/if}
             </div>
         </div>
-        
+
+        <!-- ========================== -->
+        <!--     GRÁFICO SEPARADO       -->
+        <!-- ========================== -->
+        <div class="px-6 pb-10">
+            <div class="rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    Distribución visual del pronóstico
+                </h2>
+
+                <div class="w-full h-60 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                    <Chart.Container config={chartConfig} class="w-full h-full">
+                        <BarChart
+                            data={chartData}
+                            xScale={scaleBand().padding(0.25)}
+                            x="label"
+                            axis="x"
+                            seriesLayout="group"
+                            legend
+                            series={[
+                                {
+                                    key: "prob",
+                                    label: chartConfig.prob.label,
+                                    color: chartConfig.prob.color
+                                }
+                            ]}
+                        >
+                            {#snippet tooltip()}
+                                <Chart.Tooltip />
+                            {/snippet}
+                        </BarChart>
+                    </Chart.Container>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
