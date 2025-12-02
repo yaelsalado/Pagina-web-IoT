@@ -10,7 +10,7 @@
     /* ------------------------------ */
     let datosEstacion: any[] = [];
     let errorMsg = "";
-    let controller: AbortController;
+    let controller: AbortController | null = null;
 
     const API_URL = "http://localhost:5000/get_all";
 
@@ -19,7 +19,7 @@
     let probabilidades: number[] = [0, 0, 0, 0];
 
     /* ------------------------------ */
-    /*       CONFIG GRÁFICO           */
+    /*       CONFIG GRÁFICO (prob)    */
     /* ------------------------------ */
     let chartData = [
         { label: "Soleado", prob: 0 },
@@ -35,20 +35,29 @@
         }
     } satisfies Chart.ChartConfig;
 
-    /* ------------------------------ */
-    /*   ACTUALIZAR CHART CON DATOS   */
-    /* ------------------------------ */
     function actualizarChart() {
         chartData = [
-            { label: "Soleado", prob: probabilidades[0] * 100 },
-            { label: "Nublado", prob: probabilidades[1] * 100 },
-            { label: "Lluvioso", prob: probabilidades[2] * 100 },
-            { label: "Tormenta", prob: probabilidades[3] * 100 }
+            { label: "Soleado", prob: (probabilidades[0] || 0) * 100 },
+            { label: "Nublado", prob: (probabilidades[1] || 0) * 100 },
+            { label: "Lluvioso", prob: (probabilidades[2] || 0) * 100 },
+            { label: "Tormenta", prob: (probabilidades[3] || 0) * 100 }
         ];
     }
 
     /* ------------------------------ */
-    /*   CLIMA OPEN-METEO             */
+    /*   CONFIG GRÁFICO ALTURAS       */
+    /* ------------------------------ */
+    let chartAltData: { label: string; altura: number }[] = [];
+
+    const chartAltConfig = {
+        altura: {
+            label: "Altura (cm)",
+            color: "#10b981"
+        }
+    } satisfies Chart.ChartConfig;
+
+    /* ------------------------------ */
+    /*   CLIMA OPEN-METEO (opcional)  */
     /* ------------------------------ */
     async function obtenerClimaOpenMeteo(): Promise<string> {
         try {
@@ -95,25 +104,45 @@
             const data = await res.json();
             if (!Array.isArray(data)) return;
 
+            // Obtener clima una sola vez (para mostrar en la tabla)
             const climaActual = await obtenerClimaOpenMeteo();
 
+            // Filtrar SOLO sensor 01 y mapear datos
             const nuevos = data
+                .filter((row: any) => Number(row.sensor_id) === 1) // <<--- SOLO SENSOR 01
                 .map((row: any) => ({
                     _rowId: row.id,
                     id: row.sensor_id,
                     humedad: row.humedad + "",
-                    altura: row.altura.toFixed(2) + " cm",
+                    altura_num: Number(row.altura), 
+                    altura: (Number(row.altura)).toFixed(2) + " cm",
                     clima: climaActual,
+                    created_at: row.created_at,
                     fecha: new Date(row.created_at).toLocaleDateString("es-MX", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric"
                     })
                 }))
-                .sort((a, b) => b._rowId - a._rowId);
+                .sort((a, b) => b._rowId - a._rowId); // De más reciente → más viejo
 
+            /* ---------------------------- */
+            /*     TABLA: últimos 20       */
+            /* ---------------------------- */
             datosEstacion = nuevos.slice(0, 20);
             errorMsg = "";
+
+            /* ---------------------------------------------- */
+            /*     GRÁFICO DE ALTURAS: últimos 10 registros   */
+            /* ---------------------------------------------- */
+            chartAltData = nuevos
+                .slice(0, 10) // <<--- SOLO 10
+                .map((d) => ({
+                    label: d.fecha,
+                    altura: Math.round(d.altura_num * 100) / 100
+                }))
+                .reverse(); // Orden cronológico (antiguo → reciente)
+
         } catch (error: any) {
             if (error.name !== "AbortError") {
                 console.error("❌ Error al actualizar datos:", error);
@@ -128,15 +157,27 @@
     async function cargarPrediccion() {
         try {
             const res = await fetch("http://localhost:5000/predict_tomorrow");
+            if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
 
             const etiquetas = ["Soleado", "Nublado", "Lluvioso", "Tormenta"];
-            prediccion = etiquetas[data.clase_predicha];
-            probabilidades = data.probabilidades;
+            prediccion = etiquetas[data.clase_predicha] ?? "Desconocido";
+
+            // normalizar probabilidades si vienen mal formadas
+            if (Array.isArray(data.probabilidades) && data.probabilidades.length >= 4) {
+                let probs = data.probabilidades.slice(0, 4).map((v: any) => Number(v) || 0);
+                const total = probs.reduce((s: number, x: number) => s + x, 0);
+                if (total > 0) probs = probs.map((x: number) => x / total);
+                probabilidades = probs;
+            } else {
+                probabilidades = [0.25, 0.25, 0.25, 0.25];
+            }
 
             actualizarChart();
         } catch (err) {
             console.error("❌ Error predicción clima:", err);
+            probabilidades = [0.25, 0.25, 0.25, 0.25];
+            actualizarChart();
         }
     }
 
@@ -144,15 +185,20 @@
     /*   ON MOUNT                     */
     /* ------------------------------ */
     onMount(() => {
+        // cargar inicialmente
         cargarDatos();
         cargarPrediccion();
 
+        // refrescar c/2s (como tenías antes)
         const interval = setInterval(() => {
             cargarDatos();
             cargarPrediccion();
         }, 2000);
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            if (controller) controller.abort();
+        };
     });
 </script>
 
@@ -164,7 +210,7 @@
 
         <!-- Encabezado -->
         <div class="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-700 dark:to-indigo-900 p-4">
-            <h2 class="text-xl font-semibold text-white text-center">Registros de los Sensores</h2>
+            <h2 class="text-xl font-semibold text-white text-center">Registros de los Sensores — Sensor 01</h2>
         </div>
 
         {#if errorMsg}
@@ -195,6 +241,45 @@
                     {/each}
                 </Table.Body>
             </Table.Root>
+        </div>
+
+        <!-- ========================== -->
+        <!--   GRÁFICO ALTURAS (últimos 10) -->
+        <!-- ========================== -->
+        <div class="px-6 pt-6">
+            <div class="rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    📏 Altura — Últimos 10 registros (Sensor 01)
+                </h2>
+
+                {#if chartAltData && chartAltData.length > 0}
+                    <div class="w-full h-56">
+                        <Chart.Container config={chartAltConfig} class="w-full h-full">
+                            <BarChart
+                                data={chartAltData}
+                                xScale={scaleBand().padding(0.2)}
+                                x="label"
+                                axis="x"
+                                seriesLayout="group"
+                                legend={false}
+                                series={[
+                                    {
+                                        key: "altura",
+                                        label: chartAltConfig.altura.label,
+                                        color: chartAltConfig.altura.color
+                                    }
+                                ]}
+                            >
+                                {#snippet tooltip()}
+                                    <Chart.Tooltip />
+                                {/snippet}
+                            </BarChart>
+                        </Chart.Container>
+                    </div>
+                {:else}
+                    <p class="text-gray-500">No hay datos de altura para mostrar.</p>
+                {/if}
+            </div>
         </div>
 
         <!-- ========================== -->
@@ -239,12 +324,12 @@
         </div>
 
         <!-- ========================== -->
-        <!--     GRÁFICO SEPARADO       -->
+        <!--     GRÁFICO PROBABILIDAD   -->
         <!-- ========================== -->
         <div class="px-6 pb-10">
             <div class="rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-6">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                    Distribución visual del pronóstico
+                    📊 Distribución visual del pronóstico
                 </h2>
 
                 <div class="w-full h-60 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
